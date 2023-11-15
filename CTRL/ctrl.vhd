@@ -26,11 +26,13 @@ architecture RTL of ctrl is
   constant charA : std_logic_vector(7 downto 0) := "01000001"; --'A'
   constant startbit : std_logic := "1"; --Startbitet usikker om det skal være avhengig av parity
   constant TARGET_COUNT : integer := 2500000; -- teller så mange klokkefrekvenser som tilsvarer 50ms
-  constant TxconfigADR : std_logic(4 downto 0) := "00000"; 
-  constant TxStatusADR : std_logic(4 downto 0) := "00010";
-  constant TxDataADR : std_logic(4 downto 0) := "00001";
-  type statetype is (config, waitkey, sjekkstatus); 
- 
+  constant Txconfig : std_logic(4 downto 0) := "00000"; 
+  constant TxStatus : std_logic(4 downto 0) := "00010";
+  constant TxData : std_logic(4 downto 0) := "00001";
+  
+  --Tx setter buss verdien som "00000000" når den er klar til å motta signal?
+  constant TX_Klar : std_logic_vector(7 downto 0) := "00000000";
+  type statetype is (config, waitkey, checkstatus); 
  
  -------------------------------------------------------------------------------
  -- Signaler
@@ -40,7 +42,7 @@ architecture RTL of ctrl is
   --Lager en variabel for knappen som brukes til å sjekke når knapp-verdien går fra
   --1 til 0. Slik at datainnholdet endres kun når knappen blir trykket og ikke presset
   signal key_prev_state : std_logic := '1';
-  signal paritybit : std_logic;
+  --signal paritybit : std_logic;
  -------------------------------------------------------------------------------
  -- Funkjson
  -------------------------------------------------------------------------------
@@ -48,38 +50,39 @@ architecture RTL of ctrl is
  
  --Funksjonen tar inn 2 'variabler' den ene som er dataen den skal sjekke enere på 
 --og den andre blir "modus" altså parity som sier om den skal legge til parity partall/odde
-function calculate_parity(data: std_logic_vector; modus: std_logic_vector) return std_logic is
-		  variable count : natural := 0; --Tellevariabel som starter på '0'
-    begin
-        for i in data'range loop --varer så lenge som d fortsatt er bit i data
-            if data(i) = '1' then
-                count := count + 1;
-            end if;
-        end loop;
+function calculate_parity(data: std_logic_vector; mode: std_logic_vector) return std_logic is
+    variable count: natural := 0;
+begin
+    for i in data'range loop
+        if data(i) = '1' then
+            count := count + 1;
+        end if;
+    end loop;
 
-        case mode is
-            when "00" => return '0'; -- no parity
-            when "01" => -- even parity
-                if count mod 2 = 0 then
-                    return '1';
-                else
-                    return '0';
-                end if;
-            when "10" => -- odd parity
-                if count mod 2 = 1 then --bruker mod for å gjøre d enklere
-                    return '1';
-                else
-                    return '0'; 
-                end if;
-            when others => return '0'; -- ikke i bruk. (11)
-        end case;
-    end function calculate_parity;
+    case mode is
+        when "00" => return 'X'; -- ingen parity, setter den bare som 'X' siden da skal funksjonen ikke være brukt
+        when "01" => -- even parity
+            if count/2*2 = count then -- blir det same som "mod 2" hvis count = 3, da blir uttrykket count/2 = 3/2 (=1 i VHDL de runner ned)
+                return '1';
+            else
+                return '0';
+            end if;
+        when "10" => -- odd parity
+            if count/2*2 /= count then 
+                return '1';
+            else
+                return '0';
+            end if;
+        when others => return 'x'; --Setter den bare som 'x' 
+    end case;
+end function calculate_parity;
+
   
 begin 
   process(clk, rstn_n)
   begin 
     if rst_n = '0' then
-      tilstand <= statetype'left;
+      tilstand <= statetype'left; --config
 		LED <= '0'; -- default 0
 	   RD <= '0'; --default 0
       WR <= '0'; -- default 0
@@ -98,69 +101,28 @@ begin
 		case tilstand is 
 		  when config => 
 		    WR <= '1';
-			 ADR <= TxconfigADR;
+			 ADR <= Txconfig;
 			 buss <= "000" & parity & baudsel; 
 		    tilstand <= waitkey;
-		  when waitkey =>
+		  
+		  when waitkey => 
 		    if key = '0' and key_prev_state = '1' then
-			   counter <= '0';
+			   counter <= '0'; --starter LED
 				RD <= '1'; 
-				ADR <= TxstatusADR;
-				tilstand <= sjekkstatus;
+				ADR <= Txstatus;
+				tilstand <= checkstatus;
 			 end if;
-		  when sjekkstatus => --Sjekke busy flag
-		    
-		
-		  when ---- =>
-		
-		
-		
+		  
+		  when checkstatus => --Sjekke busy "flag"
+			 if buss = TX_Klar then --Sjekke om Tx er optatt eller ikke.
+			   ADR <= TxData;
+				WR <= '1'; 
+				buss <= charA;
+				tilstand <= waitkey; --Går tilbake til å vente på knappetrykk 
+			 end if;
+			 
 		end case; 
 			 
-			 
-			 
-			 
-			 
-		  --Da endres verdien på datainnholdet -> data skal sendes og led skal lyse
-		  --Data <= charA;
-		    buss <= charA;
-		
-			 
-		   
-			 
-			 
-      if key = '0' and key_prev_state = '1' then
-		  --Da endres verdien på datainnholdet -> data skal sendes og led skal lyse
-		  --Data <= charA;
-		  buss <= charA;
-		
-		end if;
-		 
-
-		--Er lat, orker ikke å lage en funksjon som sjekker om alle bitene er "tristate"
-		--Så sjekker kun det første. 
-		if buss(0) /= 'Z' then 
-        RD <= '1'; --Forteller at Ctrl modulen er nødt til å lese datainnholdet. Fordi da er det data i databussen.  		
-		end if
-		
-		if RD = '1' and WR = '0' then --Sjekker om at Tx ikke er i "sender fasen"
-		  --Skal lese data og gjøre det klar til sending for Tx-modulen
-		  TxData <= buss; 
-		  paritybit <= calculate_parity(TxData, parity); -- Regner ut paritybit
-		  
-		  --Starter tellinga til varigheten på LED
-		  counter <= '0';
-		  WR <= '1'; --Forteller til Tx at data kan sendes.  
-		end if
-		
-		if WR = '1' then
-		  buss <= (others => 'Z'); --Setter hele data til "tristate"?
-		  --Data <= (others => 'Z'); --Setter hele data til "tristate"?
-		  RD = '0'; 
-		end if
-	 end if;
-	 
-  
   --Teller varigheten til LED
     if counter < TARGET_COUNT then
       counter <= counter + 1; 

@@ -115,7 +115,7 @@ state_machine: process
 	wait for 10*CLK_PER;
 	key_tb <= '0'; 
 
-	wait 5 ms; 
+	wait for 5 ms; 
 	assert false report "Testbench finished" severity failure;
 
    end process state_machine;

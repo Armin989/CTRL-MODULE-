@@ -21,6 +21,10 @@ architecture Sim of Ctrl_tb is
 		port(
 			clk  : in std_logic;
 			rstn : in std_logic;
+			key : in std_logic; 
+         baudsel : in std_logic_vector(2 downto 0); 
+	      parity : in std_logic_vector(1 downto 0); 
+			
 			buss : inout std_logic_vector(7 downto 0);
 			adr  : out std_logic_vector(4 downto 0);
 			WR   : out std_logic;
@@ -35,11 +39,15 @@ architecture Sim of Ctrl_tb is
    -- DUT signals
 	signal clk_tb  : std_logic;
 	signal rstn_tb : std_logic;
+	signal key_tb  : std_logic;
+	signal baudsel_tb : std_logic_vector(2 downto 0); 
+	signal parity_tb: std_logic_vector(1 downto 0);
+	
 	signal buss_tb : std_logic_vector(7 downto 0);
 	signal adr_tb  : std_logic_vector(4 downto 0);
 	signal WR_tb   : std_logic;
 	signal RD_tb   : std_logic;
-	signal TxD_tb  : std_logic;
+	signal LED_tb  : std_logic;
 
    -- Testbench signals
   
@@ -52,12 +60,17 @@ begin
 		port map (
 			clk  => clk_tb,
 			rstn => rstn_tb,
+			key => key_tb,
+			baudsel => baudsel_tb,
+			parity => parity_tb,
+			
 			buss => buss_tb,
 			adr  => adr_tb,
 			WR   => WR_tb,
 			RD   => RD_tb,
-      			TxD  => TxD_tb
+      	LED  => LED_tb
 		);
+
 
 p_clk: process is
   begin   
@@ -83,29 +96,33 @@ state_machine: process
 	adr_tb  <= "00000";
 	WR_tb   <= '0';
 	RD_tb   <= '0';
+	baudsel_tb <= "000";  -- Random verdi
+   parity_tb <= "00";    
+   key_tb <= '1';
+   LED_tb <= '0';	
+
 
 	wait until rstn_tb = '1';
 	wait for 50 ns;
 	wait until rising_edge(clk_tb);
 
--- Konfigurering 115.2k og ingen paritet:
-	WR_tb   <= '1';
+	WR_tb   <= '0';
 	adr_tb  <= "00000";
 	buss_tb <= "00000000";
 	wait for CLK_PER;
 	WR_tb   <= '0';
+	RD_tb   <= '0';
 	buss_tb <= (others => 'Z');
 
 	wait for 10*CLK_PER;
 
-	WR_tb   <= '1';
 	adr_tb  <= "00001";
 	buss_tb <= "01000010";
 	wait for CLK_PER;
 	WR_tb   <= '0';
 	buss_tb <= (others => 'Z');
 
-	wait 1 ms; -- mindre om man bare vil teste tilstandsmaskin uten baudrate
+	wait 1 ms; 
 	assert false report "Testbench finished" severity failure;
 
    end process state_machine;

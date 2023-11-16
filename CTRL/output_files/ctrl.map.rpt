@@ -1,5 +1,5 @@
 Analysis & Synthesis report for ctrl
-Thu Nov 16 19:34:28 2023
+Thu Nov 16 19:54:43 2023
 Quartus Prime Version 21.1.1 Build 850 06/23/2022 SJ Lite Edition
 
 
@@ -46,7 +46,7 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                     ;
 +------------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Thu Nov 16 19:34:28 2023       ;
+; Analysis & Synthesis Status        ; Successful - Thu Nov 16 19:54:43 2023       ;
 ; Quartus Prime Version              ; 21.1.1 Build 850 06/23/2022 SJ Lite Edition ;
 ; Revision Name                      ; ctrl                                        ;
 ; Top-level Entity Name              ; ctrl                                        ;
@@ -70,7 +70,7 @@ https://fpgasoftware.intel.com/eula.
 +------------------------------------------------------------------+--------------------+--------------------+
 ; Option                                                           ; Setting            ; Default Value      ;
 +------------------------------------------------------------------+--------------------+--------------------+
-; Device                                                           ; 10M08DAF484C8G     ;                    ;
+; Device                                                           ; 10M50DAF484C7G     ;                    ;
 ; Top-level entity name                                            ; ctrl               ; ctrl               ;
 ; Family name                                                      ; MAX 10             ; Cyclone V          ;
 ; Use smart compilation                                            ; Off                ; Off                ;
@@ -313,7 +313,7 @@ Encoding Type:  One-Hot
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 21.1.1 Build 850 06/23/2022 SJ Lite Edition
-    Info: Processing started: Thu Nov 16 19:34:12 2023
+    Info: Processing started: Thu Nov 16 19:54:28 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off ctrl -c ctrl
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 2 of the 2 processors detected
@@ -359,9 +359,9 @@ Info (21057): Implemented 168 device resources after synthesis - the final resou
     Info (21060): Implemented 8 bidirectional pins
     Info (21061): Implemented 144 logic cells
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 30 warnings
-    Info: Peak virtual memory: 4807 megabytes
-    Info: Processing ended: Thu Nov 16 19:34:28 2023
-    Info: Elapsed time: 00:00:16
+    Info: Peak virtual memory: 4799 megabytes
+    Info: Processing ended: Thu Nov 16 19:54:43 2023
+    Info: Elapsed time: 00:00:15
     Info: Total CPU time (on all processors): 00:00:24
 
 

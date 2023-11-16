@@ -104,7 +104,7 @@ begin
 		WR_tb   <= '0';
 		buss_tb <= (others => 'Z');
 
-		wait for CLK_PER;
+		wait for 1 ms;
 		assert false report "Testbench finished" severity failure;
 
 	end process state_machine;

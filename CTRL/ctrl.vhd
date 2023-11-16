@@ -14,8 +14,8 @@ entity ctrl is
     ADR : out std_logic_vector(4 downto 0); -- 
     RD : out std_logic;
 	 WR : out std_logic;
-	 buss inout std_logic_vector(7 downto 0); -- Tristate (‘Z’) etter data har blitt sendt.
-
+	 buss : inout std_logic_vector(7 downto 0) -- Tristate (‘Z’) etter data har blitt sendt.
+ 
  );
 end entity ctrl; 
 
@@ -24,11 +24,10 @@ architecture RTL of ctrl is
  -- Konstanter
  ------------------------------------------------------------------------------- 
   constant charA : std_logic_vector(7 downto 0) := "01000001"; --'A'
-  constant startbit : std_logic := "1"; --Startbitet usikker om det skal være avhengig av parity
   constant TARGET_COUNT : integer := 2500000; -- teller så mange klokkefrekvenser som tilsvarer 50ms
-  constant Txconfig : std_logic(4 downto 0) := "00000"; 
-  constant TxStatus : std_logic(4 downto 0) := "00010";
-  constant TxData : std_logic(4 downto 0) := "00001";
+  constant Txconfig : std_logic_vector(4 downto 0) := "00000"; 
+  constant TxStatus : std_logic_vector(4 downto 0) := "00010";
+  constant TxData : std_logic_vector(4 downto 0) := "00001";
   
   --Tx setter buss verdien som "00000000" når den er klar til å motta signal?
   constant TX_Klar : std_logic_vector(7 downto 0) := "00000000";
@@ -60,7 +59,7 @@ begin
     end loop;
 
     case mode is
-        when "00" => return 'X'; -- ingen parity, setter den bare som 'X' siden da skal funksjonen ikke være brukt
+        when "00" => return 'Z'; -- ingen parity, setter den bare som 'Z' siden da skal funksjonen ikke være brukt
         when "01" => -- even parity
             if count/2*2 = count then -- blir det same som "mod 2" hvis count = 3, da blir uttrykket count/2 = 3/2 (=1 i VHDL de runner ned)
                 return '1';
@@ -73,15 +72,15 @@ begin
             else
                 return '0';
             end if;
-        when others => return 'x'; --Setter den bare som 'x' 
+        when others => return 'Z'; --Setter den bare som 'Z' 
     end case;
 end function calculate_parity;
 
   
 begin 
-  process(clk, rstn_n)
+  process(clk, rstn)
   begin 
-    if rst_n = '0' then
+    if rstn = '0' then
       tilstand <= statetype'left; --config
 		LED <= '0'; -- default 0
 	   RD <= '0'; --default 0
@@ -107,7 +106,7 @@ begin
 		  
 		  when waitkey => 
 		    if key = '0' and key_prev_state = '1' then
-			   counter <= '0'; --starter LED
+			   counter <= 0; --starter LED
 				RD <= '1'; 
 				ADR <= Txstatus;
 				tilstand <= checkstatus;
@@ -122,7 +121,8 @@ begin
 			 end if;
 			 
 		end case; 
-			 
+	 end if;
+		 
   --Teller varigheten til LED
     if counter < TARGET_COUNT then
       counter <= counter + 1; 
@@ -131,5 +131,7 @@ begin
        led <= '0'; -- LED AV etter tellinga
     
 	 end if;
- 
- end architecture Ctrl;
+	 
+
+  end process;
+ end architecture RTL;

@@ -1,0 +1,6 @@
+
+State Machine - |ctrl|tilstand
+Name tilstand.checkstatus tilstand.waitkey tilstand.config 
+tilstand.config 0 0 0 
+tilstand.waitkey 0 1 1 
+tilstand.checkstatus 1 0 1 

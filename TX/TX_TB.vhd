@@ -59,55 +59,54 @@ begin
       			TxD  => TxD_tb
 		);
 
-p_clk: process is
-  begin   
-    clk_tb <= '0';
-    wait for CLK_PER/2;
-    clk_tb <= '1';
-    wait for CLK_PER/2;
-  end process p_clk;
+	p_clk: process is
+ 	begin   
+		clk_tb <= '0';
+		wait for CLK_PER/2;
+		clk_tb <= '1';
+		wait for CLK_PER/2;
+	end process p_clk;
 
-  p_rst_n: process is
-  begin        
-    rstn_tb <= '0';
-    wait for 2.2*CLK_PER;
-    rstn_tb <= '1';
-    wait;
-  end process p_rst_n;
+	p_rst_n: process is
+  	begin        
+		rstn_tb <= '0';
+		wait for 2.2*CLK_PER;
+		rstn_tb <= '1';
+		wait;
+	end process p_rst_n;
 
 		
-state_machine: process
-   begin
+	state_machine: process is
+	begin
       -- Initialize signals
-	buss_tb <= "ZZZZZZZZ";
-	adr_tb  <= "00000";
-	WR_tb   <= '0';
-	RD_tb   <= '0';
+		buss_tb <= (others => 'Z');
+		adr_tb  <= "00000";
+		WR_tb   <= '0';
+		RD_tb   <= '0';
 
-	wait until rstn_tb = '1';
-	wait for 50 ns;
-	wait until rising_edge(clk_tb);
+		wait until rstn_tb = '1';
+		wait for 50 ns;
+		wait until rising_edge(clk_tb);
 
 -- Konfigurering 115.2k og ingen paritet:
-	WR_tb   <= '1';
-	adr_tb  <= "00000";
-	buss_tb <= "00000000";
-	wait for CLK_PER;
-	WR_tb   <= '0';
-	buss_tb <= (others => 'Z');
+		WR_tb   <= '1';
+		adr_tb  <= "00000";
+		buss_tb <= "00000000";
+		WR_tb   <= '0';
+		buss_tb <= (others => 'Z');
 
-	wait for 10*CLK_PER;
+		wait for 10*CLK_PER;
 
-	WR_tb   <= '1';
-	adr_tb  <= "00001";
-	buss_tb <= "01000010";
-	wait for CLK_PER;
-	WR_tb   <= '0';
-	buss_tb <= (others => 'Z');
+		WR_tb   <= '1';
+		adr_tb  <= "00001";
+		buss_tb <= "01000010";
+		wait for CLK_PER;
+		WR_tb   <= '0';
+		buss_tb <= (others => 'Z');
 
-	wait 1 ms; -- mindre om man bare vil teste tilstandsmaskin uten baudrate
-	assert false report "Testbench finished" severity failure;
+		wait for CLK_PER;
+		assert false report "Testbench finished" severity failure;
 
-   end process state_machine;
+	end process state_machine;
 
 end architecture SIM;

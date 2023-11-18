@@ -114,6 +114,7 @@ state_machine: process
 
 	wait for 10*CLK_PER;
 	key_tb <= '0'; 
+	buss_tb <= (others => '0');
 
 	wait for 5 ms; 
 	assert false report "Testbench finished" severity failure;

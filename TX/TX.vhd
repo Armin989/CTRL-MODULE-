@@ -217,7 +217,7 @@ begin
 			
 			   if even_odd = '0' then  --TxData er even
 				
-				   parity_calc<='0'; --
+				   parity_calc<='0'; --flagg settes lav. Legger ikke til.
 					
 				elsif even_odd ='1' then--TxData er odd
 				
@@ -229,7 +229,7 @@ begin
 			
 			   if even_odd = '0' then --TxData er even
 				
-				   parity_calc<='1';
+				   parity_calc<='1'; 
 					
 				elsif even_odd ='1' then--TxData er odd
 				

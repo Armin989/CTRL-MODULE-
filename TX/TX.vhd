@@ -168,7 +168,7 @@ begin
 		   count_out <= '1';  
 		   count := 0;
 						
-	       if rising_edge(clk) then
+	       	   if rising_edge(clk) then
 		   count_out <= '0';
 							
 		   end if;		

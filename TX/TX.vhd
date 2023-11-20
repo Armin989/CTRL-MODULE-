@@ -112,7 +112,7 @@ begin
 	end process set_busy_flag_pros;	
 
 
-   Baudrate: process(clk)
+   Baudrate_process: process(clk)
   
      variable count : integer;
   
@@ -134,8 +134,8 @@ begin
 		count_out <= '1';
 		count := 0; --Resetter counter til 0
 						
-			if rising_edge(clk) then
-			   count_out <= '0';
+		   if rising_edge(clk) then
+		      count_out <= '0';
 							
 		   end if;	
 		end if;
@@ -151,8 +151,8 @@ begin
 		   count_out <= '1';  
 		   count := 0;
 						
-		if rising_edge(clk) then
-		   count_out <= '0';
+		   if rising_edge(clk) then
+		      count_out <= '0';
 							
 		   end if;		
 		end if;
@@ -165,13 +165,13 @@ begin
                end if;
 					
 	       if count = 2604 then
-		   count_out <= '1';  
-		   count := 0;
+		  count_out <= '1';  
+		  count := 0;
 						
-	       	   if rising_edge(clk) then
-		   count_out <= '0';
+	       	  if rising_edge(clk) then
+		  count_out <= '0';
 							
-		   end if;		
+		  end if;		
 		end if;
                  
 					  
@@ -186,8 +186,8 @@ begin
 		  count_out <= '1';  
 		  count := 0;
 						
-	       if rising_edge(clk) then
-		  count_out <= '0';
+	          if rising_edge(clk) then
+		     count_out <= '0';
 							
 	          end if;		
 	       end if;
@@ -196,10 +196,10 @@ begin
 			
 	end case;
      end if;	
-   end process Baudrate;
+   end process Baudrate_process;
 	
 	
-   Parity: process(clk)
+   Parity_process: process(clk)
 	  
 	   variable even_odd : bit; --Lagrer bit verdien.
 		
@@ -240,6 +240,6 @@ begin
 			when others => null;
 			
 	   end case;
-	end process Parity;
+	end process Parity_process;
 
 end architecture RTL;

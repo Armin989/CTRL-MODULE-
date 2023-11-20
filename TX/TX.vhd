@@ -207,7 +207,7 @@ begin
 	   
 		if rising_edge(clk) then
 		
-		even_odd := to_bit(TxData(0)) xor to_bit(TxData(1)) xor to_bit(TxData(2)) xor to_bit(TxData(3)) xor to_bit(TxData(4)) xor to_bit(TxData(5)) xor to_bit(TxData(6)) xor to_bit(TxData(7)); --Når even_odd=0 da er TXdata odd osv.
+		even_odd := to_bit(TxData(0)) xor to_bit(TxData(1)) xor to_bit(TxData(2)) xor to_bit(TxData(3)) xor to_bit(TxData(4)) xor to_bit(TxData(5)) xor to_bit(TxData(6)) xor to_bit(TxData(7)); --Når even_odd=1 da er TXdata odd osv.
 		
 		end if;
 	
@@ -215,11 +215,11 @@ begin
 			
 			when "01" =>--Satt til even
 			
-			   if even_odd = '1' then  --TxData er even
+			   if even_odd = '0' then  --TxData er even
 				
-				   parity_calc<='0';
+				   parity_calc<='0'; --
 					
-				elsif even_odd ='0' then--TxData er odd
+				elsif even_odd ='1' then--TxData er odd
 				
 				   parity_calc<='1';
 				
@@ -227,11 +227,11 @@ begin
 			
 		   when "10" =>--Satt til odd
 			
-			   if even_odd = '1' then --TxData er even
+			   if even_odd = '0' then --TxData er even
 				
 				   parity_calc<='1';
 					
-				elsif even_odd ='0' then--TxData er odd
+				elsif even_odd ='1' then--TxData er odd
 				
 				   parity_calc<='0';
 				

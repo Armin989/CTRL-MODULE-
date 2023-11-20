@@ -122,64 +122,80 @@ begin
 	 
      if rising_edge(clk) then
 		
-		   case baudrate is	
-            when "000" =>  --Når baudrate=000, da er count_out='1' hvis count=434.
+	case baudrate is	
+        when "000" =>  --Når baudrate=000, da er count_out='1' hvis count=434.
 				     
-               if rising_edge(clk) then --115.2k
+                if rising_edge(clk) then --115.2k
                   count := count + 1;
                   
-               end if;
+                end if;
 					
-					if count = 434 then
-						count_out <= '1';   
-					   count := 0; --Resetter counter til 0
+		if count = 434 then
+		count_out <= '1';
+		count := 0; --Resetter counter til 0
+						
+			if rising_edge(clk) then
+			   count_out <= '0';
 							
-					end if;
+		   end if;	
+		end if;
                            
-			   when "001" =>
+	when "001" =>
 				     
-               if rising_edge(clk) then --38.4k
-                  count := count + 1;
+                if rising_edge(clk) then --38.4k
+                   count := count + 1;
                   
-               end if;
+                end if;
 					
-					if count = 1302 then
-						count_out <= '1';  
-					   count := 0;
+		if count = 1302 then
+		   count_out <= '1';  
+		   count := 0;
+						
+		if rising_edge(clk) then
+		   count_out <= '0';
 							
-					end if;
+		   end if;		
+		end if;
 					  
-			   when "010" =>
+	when "010" =>
 				     
                if rising_edge(clk) then --19.2k
                   count := count + 1;
                   
                end if;
 					
-					if count = 2604 then
-						count_out <= '1';  
-					   count := 0;
+	       if count = 2604 then
+		   count_out <= '1';  
+		   count := 0;
+						
+	       if rising_edge(clk) then
+		   count_out <= '0';
 							
-					end if;
+		   end if;		
+		end if;
                  
 					  
-			   when "011" =>
+	 when "011" =>
 				     
                if rising_edge(clk) then --9600
                   count := count + 1;
                   
                end if;
 					
-					if count = 5208 then
-						count_out <= '1';  
-					   count := 0;
+	       if count = 5208 then
+		  count_out <= '1';  
+		  count := 0;
+						
+	       if rising_edge(clk) then
+		  count_out <= '0';
 							
-					end if;
+	          end if;		
+	       end if;
                
-            when others => null;
+         when others => null;
 			
-			end case;
-		end if;	
+	end case;
+     end if;	
    end process Baudrate;
 	
 	
@@ -196,9 +212,6 @@ begin
 		end if;
 	
 	   case parity_set is
-		  
-		   when "00" => parity_calc<='0';--Ingen paritet
-			
 			
 			when "01" =>--Satt til even
 			

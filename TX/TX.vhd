@@ -111,17 +111,5 @@ begin
 		
 	end process set_busy_flag_pros;	
 
-	set_busy_flag_pros : process(clk, rstn) is
-	begin
-		if rstn = '0' then
-			buss <= (others => 'Z');
-		elsif rising_edge(clk) then
-			if (RD = '1' and adr = "00010") then --- konstandt for adr
-				buss <= "0000000" & busy;
-			else
-				buss <= (others => 'Z');
-			end if;
-		end if;
-	end process set_busy_flag_pros;
 
 end architecture RTL;

@@ -112,7 +112,7 @@ begin
 	end process set_busy_flag_pros;	
 
 
-   P4: process(clk)
+   Baudrate: process(clk)
   
      variable count : integer;
   
@@ -180,10 +180,10 @@ begin
 			
 			end case;
 		end if;	
-   end process P4;
+   end process Baudrate;
 	
 	
-   P3: process(clk)
+   Parity: process(clk)
 	  
 	   variable even_odd : bit; --Lagrer bit verdien.
 		
@@ -227,6 +227,6 @@ begin
 			when others => null;
 			
 	   end case;
-	end process P3;
+	end process Parity;
 
 end architecture RTL;

@@ -112,4 +112,121 @@ begin
 	end process set_busy_flag_pros;	
 
 
+   P4: process(clk)
+  
+     variable count : integer;
+  
+   begin
+  
+     count := 0;
+	 
+     if rising_edge(clk) then
+		
+		   case baudrate is	
+            when "000" =>  --Når baudrate=000, da er count_out='1' hvis count=434.
+				     
+               if rising_edge(clk) then --115.2k
+                  count := count + 1;
+                  
+               end if;
+					
+					if count = 434 then
+						count_out <= '1';   
+					   count := 0; --Resetter counter til 0
+							
+					end if;
+                           
+			   when "001" =>
+				     
+               if rising_edge(clk) then --38.4k
+                  count := count + 1;
+                  
+               end if;
+					
+					if count = 1302 then
+						count_out <= '1';  
+					   count := 0;
+							
+					end if;
+					  
+			   when "010" =>
+				     
+               if rising_edge(clk) then --19.2k
+                  count := count + 1;
+                  
+               end if;
+					
+					if count = 2604 then
+						count_out <= '1';  
+					   count := 0;
+							
+					end if;
+                 
+					  
+			   when "011" =>
+				     
+               if rising_edge(clk) then --9600
+                  count := count + 1;
+                  
+               end if;
+					
+					if count = 5208 then
+						count_out <= '1';  
+					   count := 0;
+							
+					end if;
+               
+            when others => null;
+			
+			end case;
+		end if;	
+   end process P4;
+	
+	
+   P3: process(clk)
+	  
+	   variable even_odd : bit; --Lagrer bit verdien.
+		
+	begin
+	   
+		if rising_edge(clk) then
+		
+		even_odd := to_bit(TxData(0)) xor to_bit(TxData(1)) xor to_bit(TxData(2)) xor to_bit(TxData(3)) xor to_bit(TxData(4)) xor to_bit(TxData(5)) xor to_bit(TxData(6)) xor to_bit(TxData(7)); --Når even_odd=0 da er TXdata odd osv.
+		
+		end if;
+	
+	   case parity_set is
+		  
+		   when "00" => parity_calc<='0';--Ingen paritet
+			
+			
+			when "01" =>--Satt til even
+			
+			   if even_odd = '1' then  --TxData er even
+				
+				   parity_calc<='0';
+					
+				elsif even_odd ='0' then--TxData er odd
+				
+				   parity_calc<='1';
+				
+				end if;
+			
+		   when "10" =>--Satt til odd
+			
+			   if even_odd = '1' then --TxData er even
+				
+				   parity_calc<='1';
+					
+				elsif even_odd ='0' then--TxData er odd
+				
+				   parity_calc<='0';
+				
+				end if; 	
+				   
+			when others => null;
+			
+	   end case;
+	end process P3;
+
 end architecture RTL;

@@ -22,14 +22,15 @@ architecture Sim of Ctrl_tb is
 			clk  : in std_logic;
 			rstn : in std_logic;
 			key : in std_logic; 
-         baudsel : in std_logic_vector(2 downto 0); 
-	      parity : in std_logic_vector(1 downto 0); 
+         		baudsel : in std_logic_vector(2 downto 0); 
+	      		parity : in std_logic_vector(1 downto 0); 
 			
 			buss : inout std_logic_vector(7 downto 0);
 			adr  : out std_logic_vector(4 downto 0);
 			WR   : out std_logic;
 			RD   : out std_logic;
-			LED  : out std_logic);
+			LED  : out std_logic
+		      );
 
 	end component Ctrl;
 
@@ -68,7 +69,7 @@ begin
 			adr  => adr_tb,
 			WR   => WR_tb,
 			RD   => RD_tb,
-      	LED  => LED_tb
+      			LED  => LED_tb
 		);
 
 
@@ -93,27 +94,31 @@ state_machine: process
    begin
       -- Initialize signals
 	buss_tb <= "ZZZZZZZZ";
-	adr_tb  <= "00000";
-	WR_tb   <= '0';
-	RD_tb   <= '0';
+	--adr_tb  <= "00000";
+	--WR_tb   <= '0';
+	--RD_tb   <= '0';
 	baudsel_tb <= "000";  -- Random verdi
-   parity_tb <= "00";    
-   key_tb <= '1';
-   LED_tb <= '0';	
+        parity_tb <= "00";    
+        key_tb <= '1';
+        
 
 
 	wait until rstn_tb = '1';
+	
 	wait for 50 ns;
 	wait until rising_edge(clk_tb);
 
-	adr_tb  <= "00000";
+
+	--adr_tb  <= "00000";
 	wait for CLK_PER;
-	WR_tb   <= '0';
-	RD_tb   <= '0';
-	buss_tb <= (others => 'Z');
+	--WR_tb   <= '0';
+	--RD_tb   <= '0';
+	--buss_tb <= (others => 'Z');
 
 	wait for 10*CLK_PER;
 	key_tb <= '0'; 
+
+	wait for 5*CLK_per;
 	buss_tb <= (others => '0');
 
 	wait for 5 ms; 

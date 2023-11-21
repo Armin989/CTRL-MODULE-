@@ -82,7 +82,7 @@ begin
   begin 
     if rstn = '0' then
       tilstand <= statetype'left; --config
-		LED <= '0'; -- default 0
+	   LED <= '0'; -- default 0
 	   RD <= '0'; --default 0
       WR <= '0'; -- default 0
 		buss <= (others => 'Z'); --Dette skal sette hele data til "tristate"?
@@ -91,27 +91,29 @@ begin
 		
   --Kjører koden hvis rst_n ikke er '0'
 	 elsif rising_edge(clk) then
-	   WR <= '0';
+	   	WR <= '0';
 		RD <= '0';
 		ADR <= (others => '0');
 		buss <= (others => 'Z');
-		key_prev_state <= key;
+		
 		
 		case tilstand is 
 		  when config => 
+		    LED <= '0';
 		    WR <= '1';
-			 ADR <= Txconfig;
-			 buss <= "000" & parity & baudsel; 
+	            ADR <= Txconfig;
+	            buss <= "000" & parity & baudsel; 
 		    tilstand <= waitkey;
 		  
 		  when waitkey => 
 		    if key = '0' and key_prev_state = '1' then
-			   counter <= 0; --starter LED
-				RD <= '1'; 
-				ADR <= Txstatus;
-				tilstand <= checkstatus;
-			 end if;
-		  
+			counter <= 0; --starter LED
+			RD <= '1'; 
+			ADR <= Txstatus;
+			tilstand <= checkstatus;
+		    end if;
+		    key_prev_state <= key;
+
 		  when checkstatus => --Sjekke busy "flag"
 			 if buss = TX_Klar then --Sjekke om Tx er optatt eller ikke.
 			   ADR <= TxData;
@@ -124,7 +126,7 @@ begin
 	 end if;
 		 
   --Teller varigheten til LED
-    if counter < TARGET_COUNT then
+    if counter < (TARGET_COUNT+1) then
       counter <= counter + 1; 
       led <= '1'; -- LED PÅ gjennom tellinga
     else

@@ -94,7 +94,7 @@ state_machine: process
    begin
       -- Initialize signals
 	buss_tb <= "ZZZZZZZZ";
-	adr_tb  <= "00000";
+	--adr_tb  <= "00000";
 	--WR_tb   <= '0';
 	--RD_tb   <= '0';
 	baudsel_tb <= "000";  -- Random verdi
@@ -116,9 +116,10 @@ state_machine: process
 	--buss_tb <= (others => 'Z');
 
 	wait for 10*CLK_PER;
-	buss_tb <= (others => '0');
 	key_tb <= '0'; 
-	
+
+	wait for 5*CLK_per;
+	buss_tb <= (others => '0');
 
 	wait for 5 ms; 
 	assert false report "Testbench finished" severity failure;

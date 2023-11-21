@@ -14,7 +14,7 @@ entity ctrl is
     ADR : out std_logic_vector(4 downto 0); -- 
     RD : out std_logic;
 	 WR : out std_logic;
-	 buss : inout std_logic_vector(7 downto 0) -- Tristate (‘Z’) etter data har blitt sendt.
+	 buss : inout std_logic_vector(7 downto 0) -- Tristate ('Z') etter data har blitt sendt.
  
  );
 end entity ctrl; 
@@ -23,13 +23,13 @@ architecture RTL of ctrl is
  -------------------------------------------------------------------------------
  -- Konstanter
  ------------------------------------------------------------------------------- 
-  constant charA : std_logic_vector(7 downto 0) := "01000001"; --'A'
-  constant TARGET_COUNT : integer := 2500000; -- teller så mange klokkefrekvenser som tilsvarer 50ms
+  constant charA : std_logic_vector(7 downto 0) := "01000001"; --'A'01000001       PROBLEMER MED AT 1 TOLKES SOM UNSIGNED
+  constant TARGET_COUNT : integer := 2500000; -- teller saa mange klokkefrekvenser som tilsvarer 50ms
   constant Txconfig : std_logic_vector(4 downto 0) := "00000"; 
   constant TxStatus : std_logic_vector(4 downto 0) := "00010";
   constant TxData : std_logic_vector(4 downto 0) := "00001";
   
-  --Tx setter buss verdien som "00000000" når den er klar til å motta signal?
+  --Tx setter buss verdien som "00000000" naar den er klar til aa motta signal
   constant TX_Klar : std_logic_vector(7 downto 0) := "00000000";
   type statetype is (config, waitkey, checkstatus); 
  
@@ -38,17 +38,17 @@ architecture RTL of ctrl is
  ------------------------------------------------------------------------------- 
   signal tilstand : statetype; 
   signal counter : integer range 0 to TARGET_COUNT; --Tellevariabel for varigheten til LED lyset. 
-  --Lager en variabel for knappen som brukes til å sjekke når knapp-verdien går fra
-  --1 til 0. Slik at datainnholdet endres kun når knappen blir trykket og ikke presset
+  --Lager en variabel for knappen som brukes til aa sjekke naar knapp-verdien gaar fra
+  --1 til 0. Slik at datainnholdet endres kun naar knappen blir trykket og ikke presset
   signal key_prev_state : std_logic := '1';
   --signal paritybit : std_logic;
  -------------------------------------------------------------------------------
  -- Funkjson
  -------------------------------------------------------------------------------
---Skal kanskje være i Tx-modulen, men ser ikke grunn til å fjerne den nå.
+--Skal kanskje vaere i Tx-modulen, men ser ikke grunn til aa fjerne den naa.
  
- --Funksjonen tar inn 2 'variabler' den ene som er dataen den skal sjekke enere på 
---og den andre blir "modus" altså parity som sier om den skal legge til parity partall/odde
+ --Funksjonen tar inn 2 'variabler' den ene som er dataen den skal sjekke enere paa 
+--og den andre blir "modus" altsaa parity som sier om den skal legge til parity partall/odde
 function calculate_parity(data: std_logic_vector; mode: std_logic_vector) return std_logic is
     variable count: natural := 0;
 begin
@@ -59,7 +59,7 @@ begin
     end loop;
 
     case mode is
-        when "00" => return 'Z'; -- ingen parity, setter den bare som 'Z' siden da skal funksjonen ikke være brukt
+        when "00" => return 'Z'; -- ingen parity, setter den bare som 'Z' siden da skal funksjonen ikke vaere brukt
         when "01" => -- even parity
             if count/2*2 = count then -- blir det same som "mod 2" hvis count = 3, da blir uttrykket count/2 = 3/2 (=1 i VHDL de runner ned)
                 return '1';
@@ -77,24 +77,26 @@ begin
 end function calculate_parity;
 
   
-begin 
+begin
   process(clk, rstn)
   begin 
     if rstn = '0' then
-      tilstand <= statetype'left; --config
-	   LED <= '0'; -- default 0
-	   RD <= '0'; --default 0
-      WR <= '0'; -- default 0
-		buss <= (others => 'Z'); --Dette skal sette hele data til "tristate"?
-		--data <= (others => 'Z'); --Dette skal sette hele data til "tristate"?
-		counter <= TARGET_COUNT; 
+      
+	tilstand <= statetype'left; --config
+	counter <= TARGET_COUNT;
+	LED <= '0'; -- default 0
+	RD <= '0'; --default 0
+        WR <= '0'; -- default 0
+        buss <= (others => 'Z'); --Dette skal sette hele data til "tristate"?
+        ADR <= (others => 'Z');
+	counter <= TARGET_COUNT; 
 		
-  --Kjører koden hvis rst_n ikke er '0'
+  --Kjoorer koden hvis rst_n ikke er '0'
 	 elsif rising_edge(clk) then
 	   	WR <= '0';
 		RD <= '0';
 		ADR <= (others => '0');
-		buss <= (others => 'Z');
+	        buss <= (others => 'Z');
 		
 		
 		case tilstand is 
@@ -102,7 +104,7 @@ begin
 		    LED <= '0';
 		    WR <= '1';
 	            ADR <= Txconfig;
-	            buss <= "000" & parity & baudsel; 
+	            buss <= "000" & parity & baudsel; -- parity: 2 bit, baudsel 3 bit
 		    tilstand <= waitkey;
 		  
 		  when waitkey => 
@@ -110,7 +112,7 @@ begin
 			counter <= 0; --starter LED
 			RD <= '1'; 
 			ADR <= Txstatus;
-			tilstand <= checkstatus;
+			tilstand <= checkstatus;	        
 		    end if;
 		    key_prev_state <= key;
 
@@ -119,20 +121,29 @@ begin
 			   ADR <= TxData;
 				WR <= '1'; 
 				buss <= charA;
-				tilstand <= waitkey; --Går tilbake til å vente på knappetrykk 
+				tilstand <= waitkey; --Gaar tilbake til aa vente paa knappetrykk 
 			 end if;
 			 
 		end case; 
+
+
+		if counter < (TARGET_COUNT-1) then
+      		  counter <= counter + 1; 
+                  LED <= '1'; -- LED Paa gjennom tellinga
+                else
+      		  LED <= '0'; -- LED AV etter tellinga
+    		end if;
+
 	 end if;
 		 
   --Teller varigheten til LED
-    if counter < (TARGET_COUNT+1) then
-      counter <= counter + 1; 
-      led <= '1'; -- LED PÅ gjennom tellinga
-    else
-       led <= '0'; -- LED AV etter tellinga
-    
-	 end if;
+--    if counter < (TARGET_COUNT-1) then
+--      counter <= counter + 1; 
+--      LED <= '1'; -- LED Paa gjennom tellinga
+--    else
+--      LED <= '0'; -- LED AV etter tellinga
+--    
+--    end if;
 	 
 
   end process;

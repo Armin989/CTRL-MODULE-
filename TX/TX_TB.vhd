@@ -87,11 +87,13 @@ begin
 		wait until rstn_tb = '1';
 		wait for 50 ns;
 		wait until rising_edge(clk_tb);
+                wait for 1 ns;
 
 -- Konfigurering 115.2k og ingen paritet:
 		WR_tb   <= '1';
 		adr_tb  <= "00000";
-		buss_tb <= "00000000";
+		buss_tb <= "00010001";
+                wait for CLK_PER;
 		WR_tb   <= '0';
 		buss_tb <= (others => 'Z');
 

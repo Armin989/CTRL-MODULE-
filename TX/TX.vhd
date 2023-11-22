@@ -39,11 +39,19 @@ begin
 		variable count_trnsf : integer;
 	
 	begin
+	
 		if rstn = '0' then 
-			-- sette alt man tilordner nedenunder til startverdi
+			baudrate <= (others => '0'); 
+			parity_set <= (others => '0');
+		   TxData <= (others => '0');	
+			TxD <= '1';
+			busy <= '0';
+			state_machine <= state_machine_type'left;
 			count_trnsf := 0; 
+			
 		elsif rising_edge(clk) then
 			case state_machine is
+			
 				when config =>
 					if (WR = '1' and ADR = adr_config) then
 						baudrate <= buss(2 downto 0);
@@ -58,6 +66,7 @@ begin
 						busy <= '1';
 						state_machine <= start;
 					end if;
+					
 				when start =>
 					if count_out = '1' then
 						TxD <= '0';
@@ -69,7 +78,9 @@ begin
 						TxD <= TxData(count_trnsf);
 						if count_trnsf = 7 then
 							count_trnsf := 0;
-							if parity_set = ("01" or "10")  then
+							if parity_set = "01" then
+								state_machine <= parity;
+							elsif parity_set = "10" then
 								state_machine <= parity;
 							else 
 								state_machine <= stop;
@@ -112,104 +123,74 @@ begin
 	end process set_busy_flag_pros;	
 
 
-   Baudrate_process: process(clk)
+   Baudrate_process: process(clk, rstn)
   
      variable count : integer;
   
    begin
+	
+	  if rstn = '0' then
   
-     count := 0;
-	 
-     if rising_edge(clk) then
-		
-	case baudrate is	
-        when "000" =>  --Når baudrate=000, da er count_out='1' hvis count=434.
-				     
-                if rising_edge(clk) then --115.2k
-                  count := count + 1;
-                  
-                end if;
+        count := 0;
+	     count_out <= '0';
+	  
+     elsif rising_edge(clk) then
+	        count_out <= '0';
+		     count := count + 1;
+			  
+	   case baudrate is	
+          when "000" =>  --NÃ¥r baudrate=000, da er count_out='1' hvis count=434. 
 					
-		if count = 434 then
-		count_out <= '1';
-		count := 0; --Resetter counter til 0
-						
-		   if rising_edge(clk) then
-		      count_out <= '0';
-							
-		   end if;	
-		end if;
+		         if count = 434 then  --115.2k
+		            count_out <= '1';
+		            count := 0; --Resetter counter til 0
+		         end if;
                            
-	when "001" =>
-				     
-                if rising_edge(clk) then --38.4k
-                   count := count + 1;
-                  
-                end if;
-					
-		if count = 1302 then
-		   count_out <= '1';  
-		   count := 0;
-						
-		   if rising_edge(clk) then
-		      count_out <= '0';
-							
-		   end if;		
-		end if;
+	       when "001" =>
+				   
+				   if count = 1302 then
+		            count_out <= '1';  
+		            count := 0;	
+		         end if;
 					  
-	when "010" =>
-				     
-               if rising_edge(clk) then --19.2k
-                  count := count + 1;
-                  
-               end if;
-					
-	       if count = 2604 then
-		  count_out <= '1';  
-		  count := 0;
-						
-	       	  if rising_edge(clk) then
-		  count_out <= '0';
-							
-		  end if;		
-		end if;
-                 
+	       when "010" =>
+				                   
+	           if count = 2604 then
+		           count_out <= '1';  
+		           count := 0;
+					end if;  
 					  
-	 when "011" =>
-				     
-               if rising_edge(clk) then --9600
-                  count := count + 1;
-                  
-               end if;
-					
-	       if count = 5208 then
-		  count_out <= '1';  
-		  count := 0;
-						
-	          if rising_edge(clk) then
-		     count_out <= '0';
-							
-	          end if;		
-	       end if;
+	       when "011" =>
+
+	            if count = 5208 then
+		            count_out <= '1';  
+		            count := 0;
+						         	
+	            end if;
                
          when others => null;
 			
-	end case;
-     end if;	
+	   end case;
+    end if;	
    end process Baudrate_process;
 	
 	
-   Parity_process: process(clk)
+   Parity_process: process(clk, rstn)
 	  
 	   variable even_odd : bit; --Lagrer bit verdien.
 		
 	begin
-	   
-		if rising_edge(clk) then
+	
+	
+	   if rstn='0' then
+		    parity_calc <= '0';
+		 
+		elsif rising_edge(clk) then
 		
-		even_odd := to_bit(TxData(0)) xor to_bit(TxData(1)) xor to_bit(TxData(2)) xor to_bit(TxData(3)) xor to_bit(TxData(4)) xor to_bit(TxData(5)) xor to_bit(TxData(6)) xor to_bit(TxData(7)); --Når even_odd=1 da er TXdata odd osv.
 		
-		end if;
+		even_odd := to_bit(TxData(0)) xor to_bit(TxData(1)) xor to_bit(TxData(2)) xor to_bit(TxData(3)) xor to_bit(TxData(4)) xor to_bit(TxData(5)) xor to_bit(TxData(6)) xor to_bit(TxData(7)); --NÃ¥r even_odd=1 da er TXdata odd osv.
+		
+		
 	
 	   case parity_set is
 			
@@ -240,6 +221,7 @@ begin
 			when others => null;
 			
 	   end case;
+	  end if;
 	end process Parity_process;
 
 end architecture RTL;

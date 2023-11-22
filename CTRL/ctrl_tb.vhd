@@ -107,6 +107,7 @@ state_machine: process
 	
 	wait for 50 ns;
 	wait until rising_edge(clk_tb);
+	wait for 1 ns;
 
 
 	--adr_tb  <= "00000";
@@ -118,8 +119,15 @@ state_machine: process
 	wait for 10*CLK_PER;
 	key_tb <= '0'; 
 
-	wait for 5*CLK_per;
+	wait until RD_tb = '1';
+	wait for CLK_PER;
+	wait for 1 ns;
+	
 	buss_tb <= (others => '0');
+	wait for CLK_PER;
+	
+	buss_tb <= (others => 'Z');
+	key_tb <= '1'; 
 
 	wait for 5 ms; 
 	assert false report "Testbench finished" severity failure;

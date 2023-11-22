@@ -31,7 +31,7 @@ architecture RTL of ctrl is
   
   --Tx setter buss verdien som "00000000" naar den er klar til aa motta signal
   constant TX_Klar : std_logic_vector(7 downto 0) := "00000000";
-  type statetype is (config, waitkey, checkstatus); 
+  type statetype is (config, waitkey, checkstatus, waitResponseTX, writeChar, busyTX); 
  
  -------------------------------------------------------------------------------
  -- Signaler
@@ -92,37 +92,50 @@ begin
 	counter <= TARGET_COUNT; 
 		
   --Kjoorer koden hvis rst_n ikke er '0'
-	 elsif rising_edge(clk) then
-	   	WR <= '0';
+	elsif rising_edge(clk) then
+		WR <= '0';
 		RD <= '0';
 		ADR <= (others => '0');
-	        buss <= (others => 'Z');
-		
-		
-		case tilstand is 
-		  when config => 
-		    LED <= '0';
-		    WR <= '1';
-	            ADR <= Txconfig;
-	            buss <= "000" & parity & baudsel; -- parity: 2 bit, baudsel 3 bit
-		    tilstand <= waitkey;
-		  
-		  when waitkey => 
-		    if key = '0' and key_prev_state = '1' then
-			counter <= 0; --starter LED
-			RD <= '1'; 
-			ADR <= Txstatus;
-			tilstand <= checkstatus;	        
-		    end if;
-		    key_prev_state <= key;
+	   buss <= (others => 'Z');
+		key_prev_state <= key;
 
-		  when checkstatus => --Sjekke busy "flag"
-			 if buss = TX_Klar then --Sjekke om Tx er optatt eller ikke.
-			   ADR <= TxData;
+		case tilstand is 
+			when config => 
+				LED <= '0';
+				WR <= '1';
+	         ADR <= Txconfig;
+	         buss <= "000" & parity & baudsel; -- parity: 2 bit, baudsel 3 bit
+				tilstand <= waitkey;
+		  
+			when waitkey => 
+				if key = '0' and key_prev_state = '1' then
+					counter <= 0; --starter LED
+					RD <= '1'; 
+					ADR <= Txstatus;
+					tilstand <= waitResponseTX;	        
+				end if;
+		
+			when busyTX =>
+				RD <= '1'; 
+				ADR <= Txstatus;
+				tilstand <= waitResponseTX
+
+			when waitResponseTX =>
+				tilstand <= checkstatus;
+			
+			
+			when checkstatus => --Sjekke busy "flag"
+				if buss = TX_Klar then --Sjekke om Tx er optatt eller ikke.
+					tilstand <= writeChar; --Gaar tilbake til aa vente paa knappetrykk 
+				else
+					tilstand <= busyTX;
+				end if;
+		  
+		  when writeChar =>
+				ADR <= TxData;
 				WR <= '1'; 
 				buss <= charA;
-				tilstand <= waitkey; --Gaar tilbake til aa vente paa knappetrykk 
-			 end if;
+				tilstand <= waitkey;
 			 
 		end case; 
 
